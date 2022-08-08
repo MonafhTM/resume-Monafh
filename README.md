@@ -4,7 +4,7 @@
 Software Engineering and IOS Developer ,DevOps engineer. Having skills in administration and pedagog .
 passionate in continuing to increase my technical skills especially in programming.
 
-<div id="webaddress">
+<div id="links">
 <a href="altamimi.monafh@gmail.com">altamimi.monafh@gmail.com</a>
 | <a href="https://www.linkedin.com/in/monafhaltamimi/">My linkedin</a>
 </div>
@@ -17,7 +17,7 @@ passionate in continuing to increase my technical skills especially in programmi
 
 ### Specialized in
 
- IOS,Xcode, UIKIT , AWS Cloud, Linux, Git, SDLC, ansible, jenkins, monitoring, docker ,tools 
+ IOS,Xcode, UIKIT , AWS Cloud, Linux, Git, SDLC, ansible, jenkins, monitoring, docker 
 
 
 

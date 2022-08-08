@@ -1,0 +1,122 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This is My First CloudFormation Deployment
+Mappings:
+  RegionWiseImageIds:
+    us-east-1:
+      Ubuntu22: ami-052efd3df9dad4825
+      Ubuntu20: ami-08d4ac5b634553e16
+    us-west-1:
+      Ubuntu22: ami-085284d24fe829cd0
+      Ubuntu20: ami-01154c8b2e9a14885
+#Parameters ...
+Parameters:
+  InstanceType:
+    Type: String
+    Description: This is a paramete for Instance Type
+#resources ...
+Resources:
+  #First Instance
+  Webserver1Ec2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !FindInMap
+        - RegionWiseImageIds
+        - !Ref AWS::Region
+        - Ubuntu22 
+      InstanceType: t2.micro
+      SecurityGroups:
+        - !Ref SecurityGroup
+        - !Ref ApacheSecurityGroup
+      Tags: 
+        - 
+          Key: Name
+          Value: Webserver1Ec2Instance
+        - 
+          Key: Project2
+          Value: "My Second Ec2 instance from Cloud Formation"
+
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/sh
+            yum update -y
+            yum install httpd.x86_64 -y
+            chmod -R 777 /var/www/html
+            systemctl start httpd.service
+            systemctem enable httpd.service
+            echo "Hello My Name:Monafh AL-Tamimi cohort : Online  ^_^" > /var/www/html//index.html
+
+      KeyName: "Root-Key" 
+  #Second Instance
+  Webserver2Ec2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !FindInMap 
+        -  RegionWiseImageIds
+        - !Ref AWS::Region
+        - Ubuntu20
+      InstanceType: t2.micro
+
+      SecurityGroups:
+        - !Ref SecurityGroup
+        - !Ref ApacheSecurityGroup
+      Tags: 
+        - 
+          Key: Name
+          Value: Webserver2Ec2Instance
+        - 
+          Key: Project2
+          Value: "My Second Ec2 instance from Cloud Formation"
+
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/sh
+            yum update -y
+            yum install httpd.x86_64 -y
+            chmod -R 777 /var/www/html
+            systemctl start httpd.service
+            systemctem enable httpd.service
+            echo "Hello My Name:Monafh AL-Tamimi cohort : Online  ^_^" > /var/www/html//index.html
+
+      KeyName: "Root-Key" 
+    #VPC .......
+  Vpc: 
+    Properties: 
+      CidrBlock: 10.0.0.0/16
+      Tags: 
+        - 
+          Key: Name
+          Value: "${AWS::StackName}-VPC"
+    Type: "AWS::EC2::VPC"
+
+#SecurityGroupApache ...
+  ApacheSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: My Apache Security Group
+        GroupName: My Apache SG
+
+        SecurityGroupIngress:
+          
+          - IpProtocol: tcp
+            FromPort: 443
+            ToPort: 443
+            CidrIp: 0.0.0.0/0
+
+          - IpProtocol: tcp
+            FromPort: 22
+            ToPort: 22
+            CidrIp: 0.0.0.0/0
+
+  #SecurityGroup ...   
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Allow http to Client host"
+      SecurityGroupIngress:
+        - 
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0

@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This is my first Cloud Formation deployment
+Parameters:
+  SSHIPformat:
+      Description: The IP address range that can be used to SSH to the EC2 instances
+      Type: String
+      MinLength: '9'
+      MaxLength: '18'
+      Default: 0.0.0.0/0
+      AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+      ConstraintDescription: Must be a valid IP CIDR range of the form x.x.x.x/x
+ 
+  InstanceTypeParameter:
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t2.small
+      - t2.nano
+      - t2.medium
+    Description: Enter t2.micro, t2.small,t2.nano or t2.medium. Default is t2.micro.
+  ImageId:
+    Type: AWS::EC2::Image::Id
+    Default: ami-0cff7528ff583bf9a
+    Description: Amazon Liunx AMI ID
+Resources:
+ 
+  WebserverEc2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref 'ImageId'
+      InstanceType: !Ref InstanceTypeParameter
+      SecurityGroupIds:
+        - !Ref SecurityGroup
+      Tags:
+        - 
+          Key: Name
+          Value: WebserverEc2Instance
+        - 
+          Key: Name
+          Value: Monafh Al-Tamimi
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to client host
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Ref SSHIPformat
+
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 5.45.118/32
+
+Outputs:
+  AvailabilityZone: 
+    Value: !GetAtt [WebserverEc2Instance, AvailabilityZone]
+    Description: The AvailabilityZone    
+  PublicIP:
+    Value: !GetAtt [WebserverEc2Instance, Publicip]
+    Description: The public IP Address
+  PublicDNS:
+    Description: The Public DNS 
+    Value: !GetAtt [WebserverEc2Instance.PublicDNSName]

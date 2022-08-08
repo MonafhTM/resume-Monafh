@@ -1,0 +1,138 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This is CloudFormation Deployment
+
+#Resources ....
+Resources:
+  
+  # VPC ....
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/26
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: My-VPC
+# IGW
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: My-IGW
+# Attachment
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+#
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: us-east-1a
+      CidrBlock: 10.0.0.0/28
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: My-SN
+#
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: My-RT
+#
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+#
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
+# First SecurityGroup ....
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH + HTTP
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: 22 
+        ToPort: 22
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: 80 
+        ToPort: 80
+      Tags:
+      - Key: Name
+        Value: SSH-HTTP
+# second SecurityGroup ....
+  SecurityGroup2:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable SSH + HTTP
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: 22 
+        ToPort: 22
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp
+        FromPort: 80 
+        ToPort: 80
+      Tags:
+      - Key: Name
+        Value: SSH-HTTP
+# FirstInstans
+  serverEc2Instance1:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0cff7528ff583bf9a   
+      InstanceType: t2.micro
+      SubnetId: !Ref PublicSubnet1
+      SecurityGroupIds: 
+      - !Ref SecurityGroup
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash -xe
+          yum update -y
+          yum install httpd -y
+          systemctl enable httpd
+          systemctl start httpd
+          echo "<h1>Monafh Al-Tamimi , Cohort : Online </h1>" > /var/www/html/index.html
+      Tags:
+      - Key: Name
+        Value: WebServer
+# Second Instance ...
+  serverEc2Instance2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-052efd3df9dad4825 
+      InstanceType: t2.micro
+      SubnetId: !Ref PublicSubnet1
+      SecurityGroupIds: 
+      - !Ref SecurityGroup2
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash -xe
+          yum update -y
+          yum install httpd -y
+          systemctl enable httpd
+          systemctl start httpd
+          echo "<h1>Monafh Al-Tamimi , Cohort : Online </h1>" > /var/www/html/index.html
+      Tags:
+      - Key: Name
+        Value: WebServer2
